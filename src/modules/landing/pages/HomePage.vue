@@ -52,33 +52,27 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="prop in rentProperties" :key="prop.id" class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition">
-          <div class="relative h-56">
-            <img :src="prop.image" class="w-full h-full object-cover" />
-            <span class="absolute top-4 left-4 bg-black text-white text-xs font-bold px-3 py-1 rounded">{{ prop.tag }}</span>
-          </div>
-          <div class="p-6">
-            <h3 class="font-bold text-gray-900 mb-2">{{ prop.address }}</h3>
-            <p class="text-blue-600 font-bold text-xl mb-4">${{ prop.price }}</p>
-            <div class="flex items-center text-gray-500 text-sm space-x-4 mb-6 border-b border-gray-100 pb-4">
-              <span>🛏️ {{ prop.beds }}</span>
-              <span>🛁 {{ prop.baths }}</span>
-              <span>📐 {{ prop.sqft }} sq ft</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <img :src="prop.agentImg" class="w-8 h-8 rounded-full" />
-                <span class="text-sm font-medium text-gray-700">{{ prop.agentName }}</span>
-              </div>
-              <div class="flex space-x-2 text-gray-400">
-                <button class="hover:text-red-500">❤️</button>
-                <button class="hover:text-blue-500">🔗</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+     <div v-for="prop in realProperties" :key="prop.id" class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition">
+  <div class="relative h-56">
+    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&w=600&q=80" class="w-full h-full object-cover" />
+    <span class="absolute top-4 left-4 bg-black text-white text-xs font-bold px-3 py-1 rounded">
+      {{ prop.tipo }} </span>
+  </div>
+  
+  <div class="p-6">
+    <h3 class="font-bold text-gray-900 mb-2 uppercase">{{ prop.titulo }}</h3>
+    <p class="text-blue-600 font-bold text-xl mb-4">
+      ${{ prop.precio.toLocaleString() }}
+    </p>
+    
+    <div class="flex items-center text-gray-500 text-sm space-x-4 mb-6 border-b border-gray-100 pb-4">
+      <span>🛏️ {{ prop.habitaciones }} Beds</span>
+      <span>🛁 {{ prop.banos }} Baths</span>
+      <span>📐 2,000 sq ft</span>
+    </div>
+    
+    </div>
+</div>
       
       <div class="mt-12 text-center">
         <button class="bg-black text-white px-8 py-3 rounded text-sm font-bold hover:bg-gray-800 transition">
@@ -129,40 +123,27 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'; // Importamos hooks de Vue
 import HeroSection from '@/components/HeroSection.vue';
-// Aquí puedes importar tu Footer si lo colocaste directamente en HomeView, 
-// aunque lo ideal es que el Footer esté en App.vue.
 
-// --- DATOS FALSOS (MOCKS) PARA LLENAR EL DISEÑO ---
+// 1. Creamos una variable reactiva para guardar las propiedades reales
+const realProperties = ref([]);
 
-const areas = [
-  { name: 'Washington', listings: 25, image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&w=600&q=80', colSpan: 'md:col-span-1' },
-  { name: 'Franklin', listings: 12, image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&w=600&q=80', colSpan: 'md:col-span-1' },
-  { name: 'Clinton', listings: 8, image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&w=600&q=80', colSpan: 'md:col-span-1' },
-  { name: 'Arlington', listings: 34, image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&w=1200&q=80', colSpan: 'md:col-span-2' }, // Esta ocupa 2 columnas
-  { name: 'Centerville', listings: 15, image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&w=600&q=80', colSpan: 'md:col-span-1' },
-];
+// 2. Función para traer los datos del Backend
+const fetchProperties = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/propiedades');
+    const data = await response.json();
+    realProperties.value = data;
+  } catch (error) {
+    console.error("Error al cargar propiedades:", error);
+  }
+};
 
-const services = [
-  { icon: '🏠', title: 'Sell your home', desc: 'We do a free evaluation to be sure you want to start selling.' },
-  { icon: '🔑', title: 'Rent your home', desc: 'We do a free evaluation to be sure you want to start selling.' },
-  { icon: '🛒', title: 'Buy a home', desc: 'We do a free evaluation to be sure you want to start selling.' },
-  { icon: '📢', title: 'Free marketing', desc: 'We do a free evaluation to be sure you want to start selling.' },
-];
 
-const rentProperties = [
-  { id: 1, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&w=600&q=80', address: '92 ALLIUM PLACE, ORLANDO FL', price: '590,693', beds: 4, baths: 4, sqft: '2,096', agentName: 'Jenny Wilson', agentImg: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { id: 2, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&w=600&q=80', address: '92 ALLIUM PLACE, ORLANDO FL', price: '590,693', beds: 4, baths: 4, sqft: '2,096', agentName: 'Jenny Wilson', agentImg: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { id: 3, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&w=600&q=80', address: '92 ALLIUM PLACE, ORLANDO FL', price: '590,693', beds: 4, baths: 4, sqft: '2,096', agentName: 'Jenny Wilson', agentImg: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { id: 4, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&w=600&q=80', address: '92 ALLIUM PLACE, ORLANDO FL', price: '590,693', beds: 4, baths: 4, sqft: '2,096', agentName: 'Jenny Wilson', agentImg: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { id: 5, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?ixlib=rb-4.0.3&w=600&q=80', address: '92 ALLIUM PLACE, ORLANDO FL', price: '590,693', beds: 4, baths: 4, sqft: '2,096', agentName: 'Jenny Wilson', agentImg: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { id: 6, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&w=600&q=80', address: '92 ALLIUM PLACE, ORLANDO FL', price: '590,693', beds: 4, baths: 4, sqft: '2,096', agentName: 'Jenny Wilson', agentImg: 'https://randomuser.me/api/portraits/women/44.jpg' },
-];
+onMounted(() => {
+  fetchProperties();
+});
 
-const visualProperties = [
-  { id: 1, tag: 'For Sale', image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&w=400&q=80', location: 'Washington', price: '1,200,000' },
-  { id: 2, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&w=400&q=80', location: 'Franklin', price: '3,500/mo' },
-  { id: 3, tag: 'For Sale', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&w=400&q=80', location: 'Clinton', price: '850,000' },
-  { id: 4, tag: 'For Rent', image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&w=400&q=80', location: 'Centerville', price: '4,200/mo' },
-];
+// Mantén tus otros arrays (areas, services, etc.) igual si los quieres estáticos
 </script>

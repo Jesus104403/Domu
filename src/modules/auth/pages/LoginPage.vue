@@ -1,6 +1,9 @@
 <template>
  
       <h1 class="text-3xl font-bold text-white text-center mb-10">Login</h1>
+      <div v-if="errorMensaje" class="bg-red-500/10 border border-red-500 text-red-500 text-sm font-bold p-4 rounded-2xl mb-6 text-center">
+      {{ errorMensaje }}
+      </div>
 
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
@@ -13,20 +16,27 @@
           >
         </div>
 
-        <div>
-          <label class="block text-sm font-semibold text-gray-300 mb-2 ml-1">Password</label>
-          <div class="relative">
-            <input 
-              v-model="password"
-              type="password" 
-              placeholder="Password" 
-              class="w-full bg-[#1e1e1e] border-none text-white rounded-2xl px-5 py-4 placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-            >
-            <button type="button" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
-              👁️
-            </button>
-          </div>
-        </div>
+       <div>
+  <label class="block text-sm font-semibold text-gray-300 mb-2 ml-1">Password</label>
+  <div class="relative">
+    
+    <input 
+      v-model="password"
+      :type="mostrarPassword ? 'text' : 'password'" 
+      placeholder="Password" 
+      class="w-full bg-[#1e1e1e] border-none text-white rounded-2xl px-5 py-4 placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+    >
+    
+    <button 
+      type="button" 
+      @click="mostrarPassword = !mostrarPassword"
+      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+    >
+      {{ mostrarPassword ? '🙈' : '👁️' }}
+    </button>
+    
+  </div>
+</div>
 
         <div class="flex items-center justify-between text-xs text-gray-400 px-1">
           <label class="flex items-center gap-2 cursor-pointer hover:text-gray-200">
@@ -68,13 +78,50 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // Importamos el enrutador para cambiar de página
 
-// Definimos las variables y la función para que TypeScript las reconozca
 const email = ref('');
 const password = ref('');
+const errorMensaje = ref(''); // Variable para mostrar si se equivocan de contraseña
+const router = useRouter();
+const mostrarPassword = ref(false);
 
-const handleLogin = () => {
-  console.log('Intentando login con:', email.value);
-  // Aquí puedes añadir la lógica de autenticación o redirección
+const handleLogin = async () => {
+  errorMensaje.value = ''; // Limpiamos errores anteriores
+
+  try {
+    // 1. Enviamos los datos a nuestro backend
+    const respuesta = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    });
+
+    const data = await respuesta.json();
+
+    // 2. Revisamos si el backend nos devolvió un error (ej. contraseña incorrecta)
+    if (!respuesta.ok) {
+      throw new Error(data.error || 'Error al iniciar sesión');
+    }
+
+    // 3. ¡Login Exitoso! Guardamos el token y el rol en el navegador
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('rol', data.rol);
+    localStorage.setItem('nombre', data.nombre);
+
+    // 4. Redirigimos al usuario dependiendo de su rol
+    if (data.rol === 'ADMIN') {
+      router.push('/admin/dashboard'); // Asegúrate de que esta ruta exista en tu router
+    } else {
+      router.push('/agent/dashboard'); // Asegúrate de que esta ruta exista en tu router
+    }
+
+  } catch (error: any) {
+    console.error('Error de login:', error);
+    errorMensaje.value = error.message; // Mostramos el error en pantalla
+  }
 };
 </script>
